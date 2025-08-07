@@ -1,0 +1,99 @@
+openapi: 3.0.0
+info:
+  title: Movie Booking System API
+  version: 1.0.0
+  description: API documentation for movie booking system (generated from SRS)
+servers:
+  - url: http://localhost:8080/api
+
+paths:
+  /auth/register:
+    post:
+      summary: Đăng ký tài khoản
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                fullName:
+                  type: string
+      responses:
+        '201':
+          description: Đăng ký thành công
+
+  /movies/search:
+    get:
+      summary: Tìm kiếm phim theo tên, thể loại, lịch chiếu
+      parameters:
+        - name: title
+          in: query
+          schema:
+            type: string
+        - name: genre
+          in: query
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Kết quả tìm kiếm
+
+  /bookings:
+    post:
+      summary: Đặt vé xem phim
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                showtimeId:
+                  type: integer
+                seatIds:
+                  type: array
+                  items:
+                    type: string
+                paymentMethod:
+                  type: string
+      responses:
+        '200':
+          description: Đặt vé thành công
+
+  /feedback:
+    post:
+      summary: Gửi phản hồi đến Cinema Manager
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+      responses:
+        '200':
+          description: Đã gửi phản hồi
+
+  /theaters:
+    get:
+      summary: Tìm kiếm rạp chiếu theo khu vực
+      parameters:
+        - name: location
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Danh sách rạp chiếu theo khu vực
