@@ -1,7 +1,6 @@
 package com.example.springBootDemo.Controller;
 
 import com.example.springBootDemo.Entity.Attendance;
-import com.example.springBootDemo.Repository.AttendanceRepository;
 import com.example.springBootDemo.Service.itf.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
