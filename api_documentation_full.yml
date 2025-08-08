@@ -1,0 +1,1798 @@
+openapi: 3.0.0
+info:
+  title: Movie Booking System API
+  version: 1.0.0
+  description: OpenAPI specification for the Movie Booking System, generated from
+    SRS and database schema.
+servers:
+- url: https://api.yourdomain.com/api
+paths:
+  /auth/register:
+    post:
+      summary: Register user
+      description: Create new user account
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name: string
+              email: string
+              password: string
+              number_phone: string
+              birth_day: YYYY-MM-DD
+              gender: int
+              address: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                name: string
+                email: string
+                role: 0
+        '201':
+          description: 201 Created
+        '400':
+          description: 400 Bad Request
+        '409':
+          description: 409 Conflict
+  /auth/login:
+    post:
+      summary: Login
+      description: Authenticate and return JWT tokens
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              email: string
+              password: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                accessToken: jwt.token
+                refreshToken: jwt.token
+                user:
+                  id: 1
+                  name: string
+                  role: 0
+        '401':
+          description: 401 Unauthorized
+  /auth/verify-email:
+    get:
+      summary: Verify email
+      description: Verify account using token sent by email
+      parameters:
+      - name: token
+        in: query
+        required: false
+        schema:
+          type: string
+        description: string
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Email verified
+        '400':
+          description: 400 Bad Request
+        '404':
+          description: 404 Not Found
+  /auth/forgot-password:
+    post:
+      summary: Forgot password
+      description: Request password reset link to email
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              email: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Reset email sent
+        '404':
+          description: 404 Not Found
+  /auth/reset-password:
+    post:
+      summary: Reset password
+      description: Reset password using token
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              token: string
+              newPassword: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Password updated
+        '400':
+          description: 400 Bad Request
+  /auth/logout:
+    post:
+      summary: Logout
+      description: Invalidate refresh token / logout user
+      parameters: null
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Logged out
+  /auth/change-password:
+    post:
+      summary: Change password
+      description: Change password for authenticated user
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              oldPassword: string
+              newPassword: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Password changed
+        '400':
+          description: 400 Bad Request
+        '401':
+          description: 401 Unauthorized
+  /users/me:
+    get:
+      summary: Get profile
+      description: Get current user profile
+      parameters: null
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                name: string
+                email: string
+                number_phone: string
+                birth_day: YYYY-MM-DD
+                gender: 1
+                address: string
+                role: 0
+        '401':
+          description: 401 Unauthorized
+    put:
+      summary: Update profile
+      description: Update user profile fields
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name: string
+              address: string
+              number_phone: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Profile updated
+                user:
+                  id: 1
+        '400':
+          description: 400 Bad Request
+  /users/apply-cinema-manager:
+    post:
+      summary: Apply Cinema Manager
+      description: Submit application to become a cinema manager
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              cinema_name: string
+              info: string
+              documents:
+              - url
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                applicationId: 123
+                status: pending
+        '201':
+          description: 201 Created
+        '400':
+          description: 400 Bad Request
+  /movies:
+    get:
+      summary: Search movies
+      description: Search by title, genre, date, language; supports pagination and
+        sort
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+        description: string
+      - name: genre
+        in: query
+        required: false
+        schema:
+          type: string
+        description: string
+      - name: date_from
+        in: query
+        required: false
+        schema:
+          type: string
+        description: YYYY-MM-DD
+      - name: date_to
+        in: query
+        required: false
+        schema:
+          type: string
+        description: YYYY-MM-DD
+      - name: language
+        in: query
+        required: false
+        schema:
+          type: string
+        description: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 1
+                  title: string
+                  poster_url: url
+                  release_date: YYYY-MM-DD
+                total: 100
+  /movies/{id}:
+    get:
+      summary: Get movie detail
+      description: Get detailed movie info including genres and reviews
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                title: string
+                description: '...'
+                genres:
+                - id: 1
+                  name: Action
+                reviews:
+                - id: 1
+                  rating: 5
+                  comment: '...'
+        '404':
+          description: 404 Not Found
+  /movies/{id}/reviews:
+    get:
+      summary: Get movie reviews
+      description: List reviews for movie
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 1
+                  user:
+                    id: 2
+                    name: '...'
+                  rating: 5
+                  comment: '...'
+    post:
+      summary: Add review
+      description: Add review for movie (customer)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              rating: 5
+              comment: Great!
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 55
+                rating: 5
+                comment: Great!
+        '201':
+          description: 201 Created
+        '400':
+          description: 400 Bad Request
+  /genres:
+    get:
+      summary: List genres
+      description: List all genres
+      parameters: null
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 1
+                  name: Action
+    post:
+      summary: Create genre
+      description: Create new genre (admin)
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 10
+                name: string
+        '201':
+          description: 201 Created
+        '403':
+          description: 403 Forbidden
+  /cinemas:
+    get:
+      summary: Search cinemas
+      description: Search cinemas by area or name
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+        description: string
+      - name: area
+        in: query
+        required: false
+        schema:
+          type: string
+        description: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 1
+                  name: Cinema A
+                  address: '...'
+  /cinemas/{id}:
+    get:
+      summary: Get cinema detail
+      description: Get cinema info and rooms
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                name: string
+                address: '...'
+                rooms:
+                - id: 1
+                  name: Room 1
+                  quantity_seats: 100
+        '404':
+          description: 404 Not Found
+  /cinemas/{cinemaId}/rooms:
+    post:
+      summary: Import/Create room
+      description: Create or import room detail (cinema manager)
+      parameters:
+      - name: cinemaId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: cinemaId path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name: string
+              quantity_seats: 100
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 11
+                name: Room 1
+        '201':
+          description: 201 Created
+        '403':
+          description: 403 Forbidden
+  /rooms/{id}:
+    put:
+      summary: Update room
+      description: Update room info (cinema manager)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              name: string
+              quantity_seats: 100
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Updated
+        '403':
+          description: 403 Forbidden
+    delete:
+      summary: Delete room
+      description: Delete room (cinema manager)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Deleted
+        '403':
+          description: 403 Forbidden
+  /rooms/{roomId}/seats/import:
+    post:
+      summary: Import seats
+      description: Import list of seats with types
+      parameters:
+      - name: roomId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: roomId path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              seats:
+              - seat_number: A1
+                seat_type_id: 1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                imported: 100
+        '201':
+          description: 201 Created
+        '400':
+          description: 400 Bad Request
+  /seats/{id}:
+    put:
+      summary: Update seat
+      description: Update seat info (cinema manager)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              seat_number: A1
+              seat_type_id: 2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Updated
+    delete:
+      summary: Delete seat
+      description: Delete seat (cinema manager)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Deleted
+  /showtimes:
+    get:
+      summary: List showtimes
+      description: Filter by movie, cinema, date range; default next 7 days grouped
+        by date
+      parameters:
+      - name: movie_id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      - name: cinema_id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      - name: from_date
+        in: query
+        required: false
+        schema:
+          type: string
+        description: YYYY-MM-DD
+      - name: to_date
+        in: query
+        required: false
+        schema:
+          type: string
+        description: YYYY-MM-DD
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                dates:
+                - date: YYYY-MM-DD
+                  showtimes:
+                  - id: 1
+                    start_time: HH:MM
+                    price: 100.0
+  /movies/{movieId}/showtimes:
+    post:
+      summary: Create showtime
+      description: Create showtime for a movie in a room (cinema manager)
+      parameters:
+      - name: movieId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: movieId path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              room_id: 1
+              date: YYYY-MM-DD
+              start_time: HH:MM
+              end_time: HH:MM
+              price: 100.0
+              is_active: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 123
+        '201':
+          description: 201 Created
+        '403':
+          description: 403 Forbidden
+  /showtimes/{id}:
+    put:
+      summary: Update showtime
+      description: Update showtime (cinema manager)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              start_time: HH:MM
+              end_time: HH:MM
+              price: 100.0
+              is_active: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Updated
+    delete:
+      summary: Delete showtime
+      description: Delete showtime (cinema manager)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Deleted
+  /showtimes/{id}/lock:
+    post:
+      summary: Lock/unlock showtime
+      description: Toggle active state (cinema manager)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              lock: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Locked
+  /bookings:
+    post:
+      summary: Create booking (reserve)
+      description: 'Create booking and reserve seats (status: reserved)'
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              showtime_id: 1
+              seat_ids:
+              - 1
+              - 2
+              promotion_id: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                booking_id: 100
+                status: reserved
+                total_amount: 200.0
+        '201':
+          description: 201 Created
+        '400':
+          description: 400 Bad Request
+        '409':
+          description: 409 Conflict
+  /bookings/{id}/apply-promo:
+    post:
+      summary: Apply promotion to booking
+      description: Apply a promo code to booking before payment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              promo_code: SUMMER21
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                new_total: 180.0
+                discount: 20.0
+        '400':
+          description: 400 Bad Request
+  /bookings/{id}/cancel:
+    post:
+      summary: Cancel booking
+      description: Cancel a booking before payment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Canceled
+        '400':
+          description: 400 Bad Request
+  /users/me/bookings:
+    get:
+      summary: List user bookings
+      description: Get booking history for authenticated user
+      parameters: null
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 100
+                  status: paid
+                  created_at: YYYY-MM-DDTHH:MM:SS
+  /bookings/{id}/pay:
+    post:
+      summary: Pay booking (VNPAY)
+      description: Initiate/confirm payment via VNPAY or mark paid at counter
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              method: vnpay
+              return_url: https://...
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                payment_url: https://vnpay...
+                payment_id: 321
+        '400':
+          description: 400 Bad Request
+  /payments/{id}/confirm:
+    post:
+      summary: Confirm payment (callback)
+      description: Payment gateway calls this webhook to confirm payment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              payment_id: 1
+              status: success
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Confirmed
+  /payments/{id}/pay-at-counter:
+    post:
+      summary: Mark payment at counter
+      description: Staff marks payment done
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              amount: 100.0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Paid
+        '403':
+          description: 403 Forbidden
+  /showtimes/{id}/seats:
+    get:
+      summary: Get seat map and availability
+      description: Return seats with availability and types for a given showtime
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                seats:
+                - id: 1
+                  seat_number: A1
+                  type:
+                    id: 1
+                    name: Standard
+                    extra_price: 0.0
+                  available: true
+  /bookings/{id}:
+    get:
+      summary: Get booking detail
+      description: Retrieve booking and seat info
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 100
+                user_id: 1
+                showtime_id: 1
+                seats:
+                - seat_id: 1
+                  cost: 50.0
+                status: reserved
+        '404':
+          description: 404 Not Found
+  /promotions:
+    get:
+      summary: List promotions
+      description: Active promotions list
+      parameters: null
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 1
+                  title: Promo
+                  promo_code: SUMMER21
+                  discount: 10.0
+    post:
+      summary: Create promotion
+      description: Admin create promo
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              title: string
+              promo_code: string
+              start_time: YYYY-MM-DDTHH:MM:SS
+              end_time: YYYY-MM-DDTHH:MM:SS
+              discount: 10.0
+              limited_quantity: 100
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 10
+        '201':
+          description: 201 Created
+        '403':
+          description: 403 Forbidden
+  /promotions/{id}:
+    put:
+      summary: Update promotion
+      description: Admin update promo
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              title: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Updated
+    delete:
+      summary: Delete promotion
+      description: Admin delete promo
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Deleted
+  /reviews/{id}:
+    put:
+      summary: Update review
+      description: Edit own review
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              rating: 4
+              comment: Changed
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Updated
+        '403':
+          description: 403 Forbidden
+    delete:
+      summary: Delete review
+      description: Delete own review or admin delete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Deleted
+        '403':
+          description: 403 Forbidden
+  /contacts:
+    post:
+      summary: Create contact/support request
+      description: Customer sends support message to admin
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              subject: string
+              message: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 123
+                status: pending
+        '201':
+          description: 201 Created
+  /contacts/{id}/reply:
+    post:
+      summary: Reply to contact
+      description: Cinema manager or admin replies to contact
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              message: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Sent
+  /users/me/notifications:
+    get:
+      summary: List notifications
+      description: Get notifications for user
+      parameters: null
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 1
+                  message: '...'
+                  status: 0
+                  send_time: YYYY-MM-DDTHH:MM:SS
+  /notifications:
+    post:
+      summary: Create notification
+      description: Admin create notification to send (email/SMS/Push)
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              user_ids:
+              - 1
+              - 2
+              role: customer
+              message: string
+              method: email
+              send_time: YYYY-MM-DDTHH:MM:SS
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                job_id: 10
+        '201':
+          description: 201 Created
+  /notifications/{id}/schedule:
+    put:
+      summary: Schedule notification
+      description: Update scheduled notification
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              send_time: YYYY-MM-DDTHH:MM:SS
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Updated
+  /admin/users:
+    get:
+      summary: List users
+      description: List all users with filters
+      parameters:
+      - name: role
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 1
+                  name: '...'
+                  role: 0
+  /admin/users/{id}/lock:
+    put:
+      summary: Lock/Unlock user
+      description: Lock or unlock a user account
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              lock: true
+              reason: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Locked
+  /admin/users/{id}/role:
+    put:
+      summary: Change role
+      description: Assign role to user
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              role: cinema_manager
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Role updated
+  /admin/applications:
+    get:
+      summary: List manager applications
+      description: List cinema manager applications
+      parameters: null
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - id: 1
+                  user_id: 2
+                  status: pending
+  /admin/applications/{id}/approve:
+    post:
+      summary: Approve application
+      description: Approve cinema manager application
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              approve: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Approved
+  /admin/applications/{id}/reject:
+    post:
+      summary: Reject application
+      description: Reject application with reason
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              reason: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Rejected
+  /admin/movies/import:
+    post:
+      summary: Import movies
+      description: Import movies via file (CSV/JSON)
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              file: multipart/form-data
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                imported: 10
+                errors: 0
+  /admin/movies:
+    post:
+      summary: Create movie
+      description: Admin create/edit movie
+      parameters: null
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              title: string
+              description: string
+              release_date: YYYY-MM-DD
+              duration: 120
+              language: string
+              poster_url: string
+              genres:
+              - 1
+              - 2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 10
+        '201':
+          description: 201 Created
+  /admin/movies/{id}:
+    put:
+      summary: Update movie
+      description: Update movie details (admin)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              title: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Updated
+    delete:
+      summary: Delete movie
+      description: Delete movie (admin)
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Deleted
+  /admin/reviews/{id}/hide:
+    put:
+      summary: Hide review
+      description: Admin hide inappropriate review
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: id path parameter
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Hidden
+  /stats/bookings-by-movie:
+    get:
+      summary: Bookings by movie
+      description: Get booking ratio grouped by movie
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+        description: YYYY-MM-DD
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+        description: YYYY-MM-DD
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                items:
+                - movie_id: 1
+                  bookings: 100
+  /stats/revenue:
+    get:
+      summary: Revenue stats
+      description: Revenue by cinema or date range
+      parameters:
+      - name: cinema_id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+        description: YYYY-MM-DD
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+        description: YYYY-MM-DD
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                total: 10000.0
+                by_day:
+                - date: YYYY-MM-DD
+                  revenue: 1000.0
+  /recommendations:
+    get:
+      summary: Get recommendations
+      description: System generated recommendations by user location/history/search
+        (system)
+      parameters:
+      - name: user_id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: string
+        description: int
+      requestBody: null
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                movies:
+                - id: 1
+                  title: '...'
+                cinemas:
+                - id: 1
+                  name: '...'
